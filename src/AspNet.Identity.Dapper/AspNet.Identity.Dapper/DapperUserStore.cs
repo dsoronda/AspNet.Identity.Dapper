@@ -2,19 +2,23 @@
 using Microsoft.AspNet.Identity;
 using System.Data.Common;
 using Dapper;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace AspNet.Identity.Dapper
-{
+namespace AspNet.Identity.Dapper {
 	/// <summary>
 	/// Dapper user store.
 	/// </summary>
-	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>>
-	{
+	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> {
 		// TODO : move messages to resource file
 		//error messages
 		const string _emsg_ConnectioIsRequired = "Dbconnection is required!";
 		const string _emsg_UserIsRequired = "User is required!";
+		const string _emsg_UserNameIsRequired = "User name is required!";
+		const string _emsg_UserIdIsRequired = "User Id is required!";
 
+		//fields
 		DbConnection _connection;
 
 		/// <summary>
@@ -26,8 +30,8 @@ namespace AspNet.Identity.Dapper
 				return _connection;
 			}
 			set {
-				if (value == null)
-					throw new ArgumentNullException (_emsg_ConnectioIsRequired);
+				if ( value == null )
+					throw new ArgumentNullException ( _emsg_ConnectioIsRequired );
 
 				_connection = value;
 			}
@@ -37,51 +41,88 @@ namespace AspNet.Identity.Dapper
 		/// DI Constructor
 		/// </summary>
 		/// <param name="connection">DbConnectioin for User store.</param>
-		public DapperUserStore (DbConnection connection)
-		{
+		public DapperUserStore ( DbConnection connection ) {
 			Connection = connection;
 		}
 
 		#region IUserStore implementation
 
-		public System.Threading.Tasks.Task CreateAsync (DapperUser<TKey> user)
-		{
-			if (user == null)
-				throw new ArgumentNullException (_emsg_UserIsRequired);
+		public System.Threading.Tasks.Task CreateAsync ( DapperUser<TKey> user ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
 
-			return Task.Factory.StartNew (() => {
-				if (_connection.State != System.Data.ConnectionState.Open)
-					_connection.Open;
-				_connection.Execute ("insert into Users(UserId, UserName, PasswordHash) values(@userId, @userName, @passwordHash)", user);
-			});
+			return Task.Factory.StartNew ( ( ) => {
+				if ( _connection.State != System.Data.ConnectionState.Open )
+					_connection.Open ( );
+				_connection.Execute ( "insert into Users(UserId, UserName, PasswordHash) values(@userId, @userName, @passwordHash)", user );
+			} );
 		}
 
-		public System.Threading.Tasks.Task UpdateAsync (DapperUser<TKey> user)
-		{
-			throw new NotImplementedException ();
+		public System.Threading.Tasks.Task UpdateAsync ( DapperUser<TKey> user ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				if ( _connection.State != System.Data.ConnectionState.Open )
+					_connection.Open ( );
+				_connection.Execute ( "update Users set UserName = @userName, PasswordHash = @passwordHash where UserId = @userId", user );
+			} );
 		}
 
-		public System.Threading.Tasks.Task DeleteAsync (DapperUser<TKey> user)
-		{
-			throw new NotImplementedException ();
+		public System.Threading.Tasks.Task DeleteAsync ( DapperUser<TKey> user ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				if ( _connection.State != System.Data.ConnectionState.Open )
+					_connection.Open ( );
+
+				_connection.Execute ( "delete from Users where UserId = @userId", new { user.UserId } );
+			} );
 		}
 
-		public System.Threading.Tasks.Task<DapperUser<TKey>> FindByIdAsync (string userId)
-		{
-			throw new NotImplementedException ();
+		public System.Threading.Tasks.Task<DapperUser<TKey>> FindByIdAsync ( string userId ) {
+			if ( string.IsNullOrWhiteSpace ( userId ) )
+				throw new ArgumentNullException ( _emsg_UserIdIsRequired );
+
+			var query_string = "select * from Users where UserId = @userId";
+
+			if ( _connection.State != System.Data.ConnectionState.Open )
+				_connection.Open ( );
+
+			if ( typeof ( TKey ).Equals ( typeof ( Guid ) ) ) {
+				Guid parsegGuid;
+				if ( !Guid.TryParse ( userId, out parsegGuid ) )
+					throw new ArgumentException ( string.Format ( "'{0}' is not a valid GUID.", new { userId } ) );
+
+				return Task.Factory.StartNew ( ( ) => {
+					return _connection.Query<DapperUser<TKey>> ( query_string, new { userId = parsegGuid } ).SingleOrDefault ( );
+				} );
+			}
+
+			return Task.Factory.StartNew ( ( ) => {
+				return _connection.Query<DapperUser<TKey>> ( query_string, new { userId  } ).SingleOrDefault ( );
+			} );
+
 		}
 
-		public System.Threading.Tasks.Task<DapperUser<TKey>> FindByNameAsync (string userName)
-		{
-			throw new NotImplementedException ();
+		public System.Threading.Tasks.Task<DapperUser<TKey>> FindByNameAsync ( string userName ) {
+			if ( string.IsNullOrWhiteSpace ( userName ) )
+				throw new ArgumentNullException ( _emsg_UserNameIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				if ( _connection.State != System.Data.ConnectionState.Open )
+					_connection.Open ( );
+				return _connection.Query<DapperUser<TKey>> ( "select * from Users where lower(UserName) = @userName", new { userName = userName.ToLower ( ) } ).SingleOrDefault ( );
+			} );
 		}
 
 		#endregion
 
 		#region IDisposable implementation
 
-		public void Dispose ()
-		{
+		public void Dispose ( ) {
+			if(_connection.State== System.Data.ConnectionState.Open) _connection.Close ( );
 			// nothing to dispose yet
 		}
 
