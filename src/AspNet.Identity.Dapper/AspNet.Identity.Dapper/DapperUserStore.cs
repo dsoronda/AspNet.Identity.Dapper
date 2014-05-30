@@ -10,7 +10,8 @@ namespace AspNet.Identity.Dapper {
 	/// <summary>
 	/// Dapper user store.
 	/// </summary>
-	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> , IUserPasswordStore<DapperUser<TKey>>, IUserLoginStore<DapperUser<TKey>> {
+	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> , IUserPasswordStore<DapperUser<TKey>>, IUserLoginStore<DapperUser<TKey>>, IUserSecurityStampStore<DapperUser<TKey>>
+	{
 		// TODO : move messages to resource file
 		//error messages
 		const string _emsg_ConnectioIsRequired = "Dbconnection is required!";
@@ -203,6 +204,26 @@ namespace AspNet.Identity.Dapper {
 			} );
 		}
 
+		#endregion
+
+		#region IUserSecurityStampStore<DapperUser<TKey>> implementation
+
+		public Task SetSecurityStampAsync ( DapperUser<TKey> user, string stamp ) {
+			if (user == null)
+				throw new ArgumentNullException(_emsg_UserIsRequired);
+
+			user.SecurityStamp = stamp;
+
+			return Task.FromResult(0);
+
+		}
+
+		public Task<string> GetSecurityStampAsync ( DapperUser<TKey> user ) {
+			if (user == null)
+				throw new ArgumentNullException(_emsg_UserIsRequired);
+
+			return Task.FromResult(user.SecurityStamp);
+		}
 		#endregion
 
 	}
