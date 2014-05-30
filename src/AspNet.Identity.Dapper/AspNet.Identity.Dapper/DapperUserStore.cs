@@ -10,7 +10,7 @@ namespace AspNet.Identity.Dapper {
 	/// <summary>
 	/// Dapper user store.
 	/// </summary>
-	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> {
+	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> , IUserPasswordStore<DapperUser<TKey>> {
 		// TODO : move messages to resource file
 		//error messages
 		const string _emsg_ConnectioIsRequired = "Dbconnection is required!";
@@ -122,12 +122,36 @@ namespace AspNet.Identity.Dapper {
 		#region IDisposable implementation
 
 		public void Dispose ( ) {
-			if(_connection.State== System.Data.ConnectionState.Open) _connection.Close ( );
+			if ( _connection.State == System.Data.ConnectionState.Open )
+				_connection.Close ( );
 			// nothing to dispose yet
 		}
 
 		#endregion
-	 
+
+		#region IUserPasswordStore<DapperUser<TKey>> implementation
+
+		public Task SetPasswordHashAsync ( DapperUser<TKey> user, string passwordHash ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			user.PasswordHash = passwordHash;
+
+			return Task.FromResult ( 0 );
+		}
+
+		public Task<string> GetPasswordHashAsync ( DapperUser<TKey> user ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			return Task.FromResult(user.PasswordHash);
+		}
+
+		public Task<bool> HasPasswordAsync ( DapperUser<TKey> user ) {
+			return Task.FromResult(!string.IsNullOrEmpty(user.PasswordHash));
+		}
+
+		#endregion
 	}
 }
 
