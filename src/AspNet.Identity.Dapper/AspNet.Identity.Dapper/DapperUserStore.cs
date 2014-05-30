@@ -10,13 +10,14 @@ namespace AspNet.Identity.Dapper {
 	/// <summary>
 	/// Dapper user store.
 	/// </summary>
-	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> , IUserPasswordStore<DapperUser<TKey>> {
+	public class DapperUserStore <TKey> : IUserStore<DapperUser<TKey>> , IUserPasswordStore<DapperUser<TKey>>, IUserLoginStore<DapperUser<TKey>> {
 		// TODO : move messages to resource file
 		//error messages
 		const string _emsg_ConnectioIsRequired = "Dbconnection is required!";
 		const string _emsg_UserIsRequired = "User is required!";
 		const string _emsg_UserNameIsRequired = "User name is required!";
 		const string _emsg_UserIdIsRequired = "User Id is required!";
+		const string _emsg_LoginIsRequired = "Login is required!";
 
 		//fields
 		DbConnection _connection;
@@ -144,14 +145,66 @@ namespace AspNet.Identity.Dapper {
 			if ( user == null )
 				throw new ArgumentNullException ( _emsg_UserIsRequired );
 
-			return Task.FromResult(user.PasswordHash);
+			return Task.FromResult ( user.PasswordHash );
 		}
 
 		public Task<bool> HasPasswordAsync ( DapperUser<TKey> user ) {
-			return Task.FromResult(!string.IsNullOrEmpty(user.PasswordHash));
+			return Task.FromResult ( !string.IsNullOrEmpty ( user.PasswordHash ) );
 		}
 
 		#endregion
+
+
+		#region IUserLoginStore<DapperUser<TKey>> implementation
+
+		public Task AddLoginAsync ( DapperUser<TKey> user, UserLoginInfo login ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			if ( login == null )
+				throw new ArgumentNullException ( _emsg_LoginIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				_connection.Execute ( "insert into ExternalLogins(ExternalLoginId, UserId, LoginProvider, ProviderKey) values(@externalLoginId, @userId, @loginProvider, @providerKey)",
+					new { externalLoginId = Guid.NewGuid ( ), userId = user.UserId, loginProvider = login.LoginProvider, providerKey = login.ProviderKey } );
+			} );
+		}
+
+		public Task RemoveLoginAsync ( DapperUser<TKey> user, UserLoginInfo login ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			if ( login == null )
+				throw new ArgumentNullException ( _emsg_LoginIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				_connection.Execute ( "delete from ExternalLogins where UserId = @userId and LoginProvider = @loginProvider and ProviderKey = @providerKey",
+					new { user.UserId, login.LoginProvider, login.ProviderKey } );
+			} );
+		}
+
+		public Task<IList<UserLoginInfo>> GetLoginsAsync ( DapperUser<TKey> user ) {
+			if ( user == null )
+				throw new ArgumentNullException ( _emsg_UserIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				return ( IList<UserLoginInfo> ) _connection.Query<UserLoginInfo> ( "select LoginProvider, ProviderKey from ExternalLogins where UserId = @userId", new { user.UserId } ).ToList ( );
+			} );
+		}
+
+		public Task<DapperUser<TKey>> FindAsync ( UserLoginInfo login ) {
+			if ( login == null )
+				throw new ArgumentNullException ( _emsg_LoginIsRequired );
+
+			return Task.Factory.StartNew ( ( ) => {
+				return _connection.Query<DapperUser<TKey>> (
+					"select u.* from Users u inner join ExternalLogins ek on el.UserId = u.UserId where el.LoginProvider = @loginProvider and el.ProviderKey = @providerKey", login )
+							.SingleOrDefault ( );
+			} );
+		}
+
+		#endregion
+
 	}
 }
 
