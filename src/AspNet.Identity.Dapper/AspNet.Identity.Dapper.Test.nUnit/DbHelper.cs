@@ -10,13 +10,16 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 
 	public static class DbHelper {
 		public static readonly string InMemoryConnectionString = "Data Source=:memory:;Version=3;New=True;";
+		public static string FileConnectionString { get { return string.Format(@"Data Source={0} ;Version=3;New=True;", DbFileName); } }
+		public static readonly string DbFileName = @"d:\identity_test.sqlite";
 
-		static readonly string creteTableseSql = @"
+		private const string creteTableseSql = @"
 CREATE TABLE  Users  (
-    UserId  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    UserId  TEXT NOT NULL,
     UserName TEXT NOT NULL,
     PasswordHash TEXT,
-    SecurityStamp TEXT
+    SecurityStamp TEXT,
+	rowId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
 );
 
 CREATE TABLE ExternalLogins (
@@ -27,7 +30,7 @@ CREATE TABLE ExternalLogins (
     rowId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
 );
 ";
-		static readonly string dropTablesSql = @"
+		private const string dropTablesSql = @"
 drop table users;
 drop table ExternalLogins;
  ";
@@ -45,9 +48,8 @@ drop table ExternalLogins;
 		}
 
 		public static void DeleteTables( IDbConnection connection ) {
-			if ( connection.State != ConnectionState.Open ) {
+			if (connection.State != ConnectionState.Open)
 				connection.Open();
-			}
 
 			using ( var command = connection.CreateCommand() ) {
 				command.CommandText = dropTablesSql;
@@ -55,6 +57,28 @@ drop table ExternalLogins;
 			}
 
 		}
+
+		#region User CRUD sql
+		public static void UserInsert(IDbConnection connection)
+		{
+			if (connection.State != ConnectionState.Open)
+				connection.Open();
+
+			using ( var command = connection.CreateCommand() ) {
+				command.CommandText = "insert into Users( UserId, UserName, PasswordHash, SecurityStamp) values ( '_test_', '_test_', '_test_', '_test_' )";
+				command.ExecuteNonQuery();
+			}
+		}
+		public static void UserDelete( IDbConnection connection ) {
+			if ( connection.State != ConnectionState.Open )
+				connection.Open();
+
+			using ( var command = connection.CreateCommand() ) {
+				command.CommandText = "delete from Users where UserId = '_test_' )";
+				command.ExecuteNonQuery();
+			}
+		}
+		#endregion
 
 		public static List<string> GetTables( DbConnection connection ) {
 			if ( connection.State != ConnectionState.Open ) {

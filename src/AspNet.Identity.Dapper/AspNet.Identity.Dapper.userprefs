@@ -1,11 +1,11 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="AspNet.Identity.Dapper\DapperUserStore.cs">
     <Files>
-      <File FileName="AspNet.Identity.Dapper\DapperUser.cs" Line="12" Column="30" />
-      <File FileName="AspNet.Identity.Dapper\DapperUserStore.cs" Line="208" Column="10" />
-      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DapperUserStoreTest.cs" Line="15" Column="2" />
-      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" Line="14" Column="1" />
+      <File FileName="AspNet.Identity.Dapper\DapperUserStore.cs" Line="42" Column="53" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DapperUserStoreTest.cs" Line="19" Column="3" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" Line="24" Column="61" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DbHelper.cs" Line="22" Column="30" />
     </Files>
     <Pads>
       <Pad Id="MonoDevelop.NUnit.TestPad">
@@ -16,9 +16,8 @@
                 <Node name="Dapper" expanded="True">
                   <Node name="Test" expanded="True">
                     <Node name="nUnit" expanded="True">
-                      <Node name="DatabaseTest" expanded="True">
-                        <Node name="CanCreateInMemoryDatabaseConnection" selected="True" />
-                      </Node>
+                      <Node name="DapperUserStoreTest" expanded="True" selected="True" />
+                      <Node name="DatabaseTest" expanded="True" />
                     </Node>
                   </Node>
                 </Node>
@@ -30,10 +29,7 @@
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="D:\GITHUB\dsoronda\AspNet.Identity.Dapper.git\src\AspNet.Identity.Dapper\AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" line="25" column="1" />
-      <Breakpoint file="D:\GITHUB\dsoronda\AspNet.Identity.Dapper.git\src\AspNet.Identity.Dapper\AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" line="14" column="1" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
