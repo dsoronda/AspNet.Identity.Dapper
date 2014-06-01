@@ -4,16 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace AspNet.Identity.Dapper.Test.nUnit {
 	[TestFixture]
-	public class DapperUserStoreTest {
-		private static DapperUser<string> TestDapperUser {
-			get {
-				var ticks = DateTime.Now.Ticks.ToString();
-				return new DapperUser<string>() {
+	public class DapperUserStoreTest
+	{
+		private Random randeomGen =new Random( Guid.NewGuid().GetHashCode() );
 
-					UserName = "_testUser_" + ticks,
+		private  DapperUser<string> TestDapperUser {
+			get
+			{
+				var random = randeomGen.Next().ToString();
+				return new DapperUser<string>() {
+					UserName = "_testUser_" + random,
 					PasswordHash = "_test_",
 					SecurityStamp = "_test_",
-					UserId = ticks
+					UserId = random
 				};
 			}
 		}
@@ -54,7 +57,6 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 			}
 		}
 
-
 		[Test]
 		public void CanCreateAsync() {
 			var dapperUser = TestDapperUser;
@@ -74,7 +76,48 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 			}
 		}
 
+		[Test]
+		public void CanUpdateAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
 
+				dapperUser.UserName = "a";
+				dapperUser.PasswordHash = "a";
+				dapperUser.SecurityStamp = "a";
+
+				store.UpdateAsync(dapperUser).Wait();
+
+				var updatedUser = store.FindByIdAsync(dapperUser.UserId).Result;
+				Assert.AreEqual( updatedUser.UserId, dapperUser.UserId );
+				Assert.AreEqual( updatedUser.UserName, dapperUser.UserName );
+				Assert.AreEqual( updatedUser.PasswordHash, dapperUser.PasswordHash );
+				Assert.AreEqual( updatedUser.SecurityStamp, dapperUser.SecurityStamp );
+			}
+		}
+
+		[Test]
+		public void CanDeleteAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				var getTestUser = store.FindByIdAsync( dapperUser.UserId ).Result;
+
+				Assert.IsNotNull( getTestUser );
+				Assert.AreEqual( getTestUser.UserId, dapperUser.UserId );
+				Assert.AreEqual( getTestUser.Id, dapperUser.Id );
+				Assert.AreEqual( getTestUser.UserName, dapperUser.UserName );
+				Assert.AreEqual( getTestUser.PasswordHash, dapperUser.PasswordHash );
+				Assert.AreEqual( getTestUser.SecurityStamp, dapperUser.SecurityStamp );
+
+				store.DeleteAsync(getTestUser).Wait();
+				var deletedUser = store.FindByIdAsync( dapperUser.UserId ).Result;
+				Assert.IsNull( deletedUser );
+			}
+		}
 
 
 		#endregion
