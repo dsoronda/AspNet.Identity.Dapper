@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Identity;
 using NUnit.Framework;
 using System.Runtime.InteropServices;
 
@@ -160,6 +163,90 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 		}
 
 
+		#endregion
+
+		#region IUserLoginStore<DapperUser<TKey>> implementation tests
+
+		[Test]
+		public void CanAddAndGetLoginAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				const string testValue = "_test_";
+				var userLoginInfo = new UserLoginInfo( testValue, testValue );
+				store.AddLoginAsync( dapperUser, userLoginInfo ).Wait();
+
+				IList<UserLoginInfo> list = store.GetLoginsAsync( dapperUser ).Result.ToList();
+				Assert.IsNotNull( list );
+				Assert.IsTrue( list.Count() == 1 );
+				Assert.IsNotNull( list.First() );
+
+				var testLoginInfo = list.First();
+				Assert.AreEqual( testLoginInfo.LoginProvider, testValue );
+				Assert.AreEqual( testLoginInfo.ProviderKey, testValue );
+			}
+		}
+
+		[Test]
+		public void CanRemoveLoginAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				const string testValue = "_test_";
+				var userLoginInfo = new UserLoginInfo( testValue, testValue );
+				store.AddLoginAsync( dapperUser, userLoginInfo ).Wait();
+
+				IList<UserLoginInfo> list = store.GetLoginsAsync( dapperUser ).Result.ToList();
+				Assert.IsNotNull( list );
+				Assert.IsTrue( list.Count() == 1 );
+				Assert.IsNotNull( list.First() );
+
+				store.RemoveLoginAsync( dapperUser, userLoginInfo ).Wait();
+
+				IList<UserLoginInfo> listDeleted = store.GetLoginsAsync( dapperUser ).Result.ToList();
+				Assert.IsNotNull( listDeleted );
+				Assert.IsTrue( listDeleted.Count == 0 );
+			}
+		}
+
+		[Test]
+		public void CanFindAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				const string testValue = "_test_";
+				var userLoginInfo = new UserLoginInfo( testValue, testValue );
+				store.AddLoginAsync( dapperUser, userLoginInfo ).Wait();
+
+				DapperUser<string> user = store.FindAsync( userLoginInfo ).Result;
+				Assert.IsNotNull( user );
+				Assert.AreEqual( user.UserId, dapperUser.UserId );
+
+			}
+		}
+
+		[Test]
+		public void CanNotFindNonExistent() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				const string testValue = "_test_";
+				var userLoginInfo = new UserLoginInfo( testValue, testValue );
+				store.AddLoginAsync( dapperUser, userLoginInfo ).Wait();
+
+				DapperUser<string> user = store.FindAsync( new UserLoginInfo( "a", "a" ) ).Result;
+				Assert.IsNull( user );
+
+			}
+		}
 		#endregion
 
 	}
