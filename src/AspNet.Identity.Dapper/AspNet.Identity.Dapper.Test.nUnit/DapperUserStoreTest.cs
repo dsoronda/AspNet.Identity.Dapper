@@ -1,16 +1,15 @@
 ﻿using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using System.Runtime.InteropServices;
 
 namespace AspNet.Identity.Dapper.Test.nUnit {
 	[TestFixture]
-	public class DapperUserStoreTest
-	{
-		private Random randeomGen =new Random( Guid.NewGuid().GetHashCode() );
+	public class DapperUserStoreTest {
+		private Random randeomGen = new Random( Guid.NewGuid().GetHashCode() );
 
-		private  DapperUser<string> TestDapperUser {
-			get
-			{
+		private DapperUser<string> TestDapperUser {
+			get {
 				var random = randeomGen.Next().ToString();
 				return new DapperUser<string>() {
 					UserName = "_testUser_" + random,
@@ -40,7 +39,7 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 		#region IUserStore implementation tests
 		[Test]
 		public void CanFindById() {
-			// var dapperUser = TestDapperUser;
+			// user is created thru SQL script so we can test GetById 
 			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
 				DbHelper.UserInsert( dbConnection );
 
@@ -87,9 +86,9 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 				dapperUser.PasswordHash = "a";
 				dapperUser.SecurityStamp = "a";
 
-				store.UpdateAsync(dapperUser).Wait();
+				store.UpdateAsync( dapperUser ).Wait();
 
-				var updatedUser = store.FindByIdAsync(dapperUser.UserId).Result;
+				var updatedUser = store.FindByIdAsync( dapperUser.UserId ).Result;
 				Assert.AreEqual( updatedUser.UserId, dapperUser.UserId );
 				Assert.AreEqual( updatedUser.UserName, dapperUser.UserName );
 				Assert.AreEqual( updatedUser.PasswordHash, dapperUser.PasswordHash );
@@ -113,7 +112,7 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 				Assert.AreEqual( getTestUser.PasswordHash, dapperUser.PasswordHash );
 				Assert.AreEqual( getTestUser.SecurityStamp, dapperUser.SecurityStamp );
 
-				store.DeleteAsync(getTestUser).Wait();
+				store.DeleteAsync( getTestUser ).Wait();
 				var deletedUser = store.FindByIdAsync( dapperUser.UserId ).Result;
 				Assert.IsNull( deletedUser );
 			}
@@ -121,6 +120,48 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 
 
 		#endregion
+
+		#region SetPasswordHashAsync implementation tests
+
+		[Test]
+		public void CanGetPasswordHashAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+				var passwordHash = store.GetPasswordHashAsync( dapperUser ).Result;
+				Assert.IsNotNullOrEmpty( passwordHash );
+				Assert.AreEqual( passwordHash, dapperUser.PasswordHash );
+			}
+		}
+
+		[Test]
+		public void CanSetPasswordHashAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+				const string passwordHash = "x";
+				store.SetPasswordHashAsync( dapperUser, passwordHash ).Wait();
+
+				Assert.AreEqual( passwordHash, dapperUser.PasswordHash );
+			}
+		}
+
+		[Test]
+		public void HasPasswordAsyncTest() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				store.CreateAsync( dapperUser ).Wait();
+
+				Assert.IsTrue( store.HasPasswordAsync( dapperUser ).Result );
+			}
+		}
+
+
+		#endregion
+
 	}
 }
 
