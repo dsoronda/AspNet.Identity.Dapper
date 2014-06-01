@@ -131,7 +131,6 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 			var dapperUser = TestDapperUser;
 			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
 				var store = new DapperUserStore<string>( dbConnection );
-				store.CreateAsync( dapperUser ).Wait();
 				var passwordHash = store.GetPasswordHashAsync( dapperUser ).Result;
 				Assert.IsNotNullOrEmpty( passwordHash );
 				Assert.AreEqual( passwordHash, dapperUser.PasswordHash );
@@ -143,7 +142,6 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 			var dapperUser = TestDapperUser;
 			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
 				var store = new DapperUserStore<string>( dbConnection );
-				store.CreateAsync( dapperUser ).Wait();
 				const string passwordHash = "x";
 				store.SetPasswordHashAsync( dapperUser, passwordHash ).Wait();
 
@@ -249,6 +247,34 @@ namespace AspNet.Identity.Dapper.Test.nUnit {
 		}
 		#endregion
 
+
+
+		#region IUserSecurityStampStore<DapperUser<TKey>> implementation tests
+
+		[Test]
+		public void CanSetSecurityStampAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				const string newStamp = "a";
+				store.SetSecurityStampAsync( dapperUser, newStamp ).Wait();
+				Assert.AreEqual( dapperUser.SecurityStamp, newStamp );
+			}
+		}
+
+		[Test]
+		public void CanGetSecurityStampAsync() {
+			var dapperUser = TestDapperUser;
+			using ( var dbConnection = DbHelper.GetTestDatabaseConnection() ) {
+				var store = new DapperUserStore<string>( dbConnection );
+				var stamp = store.GetSecurityStampAsync( dapperUser ).Result;
+				Assert.AreEqual( dapperUser.SecurityStamp, stamp );
+			}
+		}
+
+
+
+		#endregion
 	}
 }
 
