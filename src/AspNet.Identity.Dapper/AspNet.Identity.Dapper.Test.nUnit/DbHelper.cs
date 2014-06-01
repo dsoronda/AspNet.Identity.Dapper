@@ -32,54 +32,60 @@ drop table users;
 drop table ExternalLogins;
  ";
 
-		public static void CreateTables ( IDbConnection connection ) {
+		public static void CreateTables( IDbConnection connection ) {
 			if ( connection.State != ConnectionState.Open ) {
-				connection.Open ( );
+				connection.Open();
 			}
 
-			using ( var command = connection.CreateCommand ( ) ) {
+			using ( var command = connection.CreateCommand() ) {
 				command.CommandText = creteTableseSql;
-				command.ExecuteNonQuery ( );
+				command.ExecuteNonQuery();
 			}
 
 		}
 
-		public static void DeleteTables ( IDbConnection connection ) {
+		public static void DeleteTables( IDbConnection connection ) {
 			if ( connection.State != ConnectionState.Open ) {
-				connection.Open ( );
+				connection.Open();
 			}
 
-			using ( var command = connection.CreateCommand ( ) ) {
+			using ( var command = connection.CreateCommand() ) {
 				command.CommandText = dropTablesSql;
-				command.ExecuteNonQuery ( );
+				command.ExecuteNonQuery();
 			}
 
 		}
 
-		public static List<string> GetTables ( DbConnection connection ) {
+		public static List<string> GetTables( DbConnection connection ) {
 			if ( connection.State != ConnectionState.Open ) {
-				connection.Open ( );
+				connection.Open();
 			}
-			var list = new List<string> ( );
+			var list = new List<string>();
 
-			using ( var command = connection.CreateCommand ( ) ) {
-				var tables = connection.GetSchema ( "Tables" );
+			using ( var command = connection.CreateCommand() ) {
+				var tables = connection.GetSchema( "Tables" );
 				foreach ( DataRow item in tables.Rows ) {
-					if ( item [ 2 ].ToString ( ).Contains ( "sqlite" ) )
+					if ( item[2].ToString().Contains( "sqlite" ) )
 						continue;
-					list.Add ( item [ 2 ].ToString ( ) );
+					list.Add( item[2].ToString() );
 				}
-				
+
 				return list;
 			}
 		}
 
-		public static DbConnection GetInMemoryDbConnection ( ) {
-			return GetDbConnection ( InMemoryConnectionString ) as DbConnection;
+		public static DbConnection GetInMemoryDbConnection() {
+			return GetDbConnection( InMemoryConnectionString ) as DbConnection;
 		}
 
-		public static DbConnection GetDbConnection ( string connectionString ) {
-			return new SQLiteConnection ( connectionString ) as DbConnection;
+		public static DbConnection GetTestDatabaseConnection() {
+			var connection = GetInMemoryDbConnection();
+			CreateTables( connection );
+			return connection;
+		}
+
+		public static DbConnection GetDbConnection( string connectionString ) {
+			return new SQLiteConnection( connectionString ) as DbConnection;
 		}
 	}
 }
