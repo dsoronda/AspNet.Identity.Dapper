@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 // Change them to the values specific to your project.
 
 [assembly: AssemblyTitle ("AspNet.Identity.Dapper")]
-[assembly: AssemblyDescription ("")]
+[assembly: AssemblyDescription( "Dapper implementation of AspNet.Identity" )]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
-[assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("user")]
+[assembly: AssemblyProduct( "AspNet.Identity.Dapper" )]
+[assembly: AssemblyCopyright( "Dražen Šoronda (dsoronda at gmail.com)" )]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 
