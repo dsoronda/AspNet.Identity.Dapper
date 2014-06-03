@@ -3,30 +3,10 @@
   <MonoDevelop.Ide.Workbench ActiveDocument="AspNet.Identity.Dapper\DapperUserStore.cs">
     <Files>
       <File FileName="AspNet.Identity.Dapper\DapperUserStore.cs" Line="42" Column="53" />
-      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DapperUserStoreTest.cs" Line="19" Column="3" />
-      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" Line="24" Column="61" />
-      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DbHelper.cs" Line="22" Column="30" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DapperUserStoreTest.cs" Line="1" Column="1" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DatabaseTest.cs" Line="1" Column="1" />
+      <File FileName="AspNet.Identity.Dapper.Test.nUnit\DbHelper.cs" Line="1" Column="1" />
     </Files>
-    <Pads>
-      <Pad Id="MonoDevelop.NUnit.TestPad">
-        <State expanded="True">
-          <Node name="AspNet.Identity.Dapper.Test.nUnit" expanded="True">
-            <Node name="AspNet" expanded="True">
-              <Node name="Identity" expanded="True">
-                <Node name="Dapper" expanded="True">
-                  <Node name="Test" expanded="True">
-                    <Node name="nUnit" expanded="True">
-                      <Node name="DapperUserStoreTest" expanded="True" selected="True" />
-                      <Node name="DatabaseTest" expanded="True" />
-                    </Node>
-                  </Node>
-                </Node>
-              </Node>
-            </Node>
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

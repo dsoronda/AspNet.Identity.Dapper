@@ -30,12 +30,36 @@ namespace AspNet.Identity.Dapper {
 		private DbConnection _connection;
 
 		/// <summary>
+		///     Database connection for User Stopre
+		/// </summary>
+		/// <value>The connection.</value>
+		public DbConnection Connection {
+			get { return _connection; }
+			set {
+				if ( value == null )
+					throw new ArgumentNullException( _emsg_ConnectioIsRequired );
+
+				_connection = value;
+			}
+		}
+
+		/// <summary>
 		///     DI Constructor
 		/// </summary>
 		/// <param name="connection">DbConnectioin for User store.</param>
 		public DapperUserStore( DbConnection connection ) {
 			Connection = connection;
 		}
+
+		#region IDisposable implementation
+
+		public void Dispose() {
+			if ( _connection.State == ConnectionState.Open )
+				_connection.Close();
+			_connection = null;	// remove reference
+		}
+
+		#endregion
 
 		#region IUserStore implementation
 
@@ -137,15 +161,6 @@ namespace AspNet.Identity.Dapper {
 
 		#endregion
 
-		#region IDisposable implementation
-
-		public void Dispose() {
-			if ( _connection.State == ConnectionState.Open )
-				_connection.Close();
-			// nothing to dispose yet
-		}
-
-		#endregion
 
 		#region IUserPasswordStore<DapperUser<TKey>> implementation
 
@@ -254,18 +269,6 @@ namespace AspNet.Identity.Dapper {
 
 		#endregion
 
-		/// <summary>
-		///     Database connection for User Stopre
-		/// </summary>
-		/// <value>The connection.</value>
-		public DbConnection Connection {
-			get { return _connection; }
-			set {
-				if ( value == null )
-					throw new ArgumentNullException( _emsg_ConnectioIsRequired );
 
-				_connection = value;
-			}
-		}
 	}
 }
